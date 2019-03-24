@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using UserGoldService.Domain;
 using UserGoldService.Entities;
@@ -21,7 +22,7 @@ namespace UserGoldService.Controllers
         public async Task<IActionResult> MyGold([FromHeader] string token)
         {
             Result<decimal> result = await _service.GetMyGold(token);
-            return GetValue(result, r => Content(r.ToString()));
+            return GetValue(result, r => Content(r.ToString(CultureInfo.InvariantCulture)));
 
         }
 

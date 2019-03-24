@@ -32,24 +32,25 @@ namespace UserGoldService.Domain
             {
                 return NotValidToken<bool>();
             }
-            var mutex = new Mutex(false, token);
+
+            Mutex mutex = new Mutex(false, token);
             mutex.WaitOne();
             try
             {
                 User user = await _repository.Get(id);
-            if (user == null)
-            {
-                return NotValidToken<bool>();
-            }
+                if (user == null)
+                {
+                    return NotValidToken<bool>();
+                }
 
-            if (decimal.MaxValue - count <= user.Gold)
-            {
-                return ErroWithMessage<bool>($"count to big. count:{count} + user gold:{user.Gold} must by < {decimal.MaxValue}");
-            }
+                if (decimal.MaxValue - count <= user.Gold)
+                {
+                    return ErroWithMessage<bool>($"count to big. count:{count} + user gold:{user.Gold} must by < {decimal.MaxValue}");
+                }
 
-            user.Gold += count;
-          await _repository.Update(user);
-            return Valid<bool>(true);
+                user.Gold += count;
+                await _repository.Update(user);
+                return Valid<bool>(true);
             }
             finally
             {
@@ -75,12 +76,15 @@ namespace UserGoldService.Domain
         public async Task<Result<string>> Register(string userName)
         {
             if (string.IsNullOrWhiteSpace(userName))
+            {
                 return ErroWithMessage<string>("user name is empty!");
-            var mutex = new Mutex(false, userName);
+            }
+
+            Mutex mutex = new Mutex(false, userName);
             mutex.WaitOne();
             try
             {
-                var user = await _repository.GetByName(userName);
+                User user = await _repository.GetByName(userName);
                 if (user == null)
                 {
                     user = new User
@@ -89,7 +93,7 @@ namespace UserGoldService.Domain
                         Name = userName,
                         Gold = 0
                     };
-                   await _repository.Create(user);
+                    await _repository.Create(user);
                 }
                 return Valid<string>(user.id.ToString());
             }

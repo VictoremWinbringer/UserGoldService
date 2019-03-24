@@ -43,6 +43,7 @@ namespace UserGoldServiceTest
 
         private async Task<decimal> GetMyGold(string token)
         {
+            _client.DefaultRequestHeaders.Remove("token");
             _client.DefaultRequestHeaders.Add("token", new[] { token });
             HttpResponseMessage response = await _client.GetAsync(_root + "mygold/");
             response.EnsureSuccessStatusCode();
@@ -53,7 +54,8 @@ namespace UserGoldServiceTest
         private async Task AddGold(decimal count, string token)
         {
             StringContent content = new StringContent("");
-            content.Headers.Add("token", new[] { token });
+            _client.DefaultRequestHeaders.Remove("token");
+            _client.DefaultRequestHeaders.Add("token", new[] { token });
             HttpResponseMessage response = await _client.PutAsync(_root + $"gold/{count}", content);
             response.EnsureSuccessStatusCode();
         }
@@ -65,7 +67,7 @@ namespace UserGoldServiceTest
             var oldGold = await GetMyGold(token);
             await AddGold(1, token);
             var newGold = await GetMyGold(token);
-            Assert.Equal(oldGold, newGold + 1);
+            Assert.Equal(oldGold+1, newGold);
         }
     }
 }
