@@ -63,11 +63,12 @@ namespace UserGoldServiceTest
         [Fact]
         public async Task WorkCorrect()
         {
+            decimal added = 1.1M;
             var token = await Register("Victor");
             var oldGold = await GetMyGold(token);
-            await AddGold(1, token);
+            await AddGold(added, token);
             var newGold = await GetMyGold(token);
-            Assert.Equal(oldGold+1, newGold);
+            Assert.Equal(oldGold+added, newGold);
         }
     }
 }
