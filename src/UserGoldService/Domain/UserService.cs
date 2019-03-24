@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using UserGoldService.Adapters;
 using UserGoldService.Entities;
 namespace UserGoldService.Domain
 {
     public interface IUserService
     {
-        Result<decimal> GetMyGold(string token);
-        Result<bool> AddGold(decimal count, string token);
-        Result<string> Register(string userName);
+        Task<Result<decimal>> GetMyGold(string token);
+        Task<Result<bool>> AddGold(decimal count, string token);
+        Task<Result<string>> Register(string userName);
     }
 
     public class UserService : IUserService
@@ -20,7 +21,7 @@ namespace UserGoldService.Domain
             _repository = repository;
         }
 
-        public Result<bool> AddGold(decimal count, string token)
+        public async Task<Result<bool>> AddGold(decimal count, string token)
         {
             if (count < 0)
             {
@@ -35,7 +36,7 @@ namespace UserGoldService.Domain
             mutex.WaitOne();
             try
             {
-                User user = _repository.Get(id);
+                User user = await _repository.Get(id);
             if (user == null)
             {
                 return NotValidToken<bool>();
@@ -47,7 +48,7 @@ namespace UserGoldService.Domain
             }
 
             user.Gold += count;
-            _repository.Update(user);
+          await _repository.Update(user);
             return Valid<bool>(true);
             }
             finally
@@ -56,14 +57,14 @@ namespace UserGoldService.Domain
             }
         }
 
-        public Result<decimal> GetMyGold(string token)
+        public async Task<Result<decimal>> GetMyGold(string token)
         {
             if (!Guid.TryParse(token, out Guid id))
             {
                 return NotValidToken<decimal>();
             }
 
-            User user = _repository.Get(id);
+            User user = await _repository.Get(id);
             if (user == null)
             {
                 return NotValidToken<decimal>();
@@ -71,7 +72,7 @@ namespace UserGoldService.Domain
             return Valid<decimal>(user.Gold);
         }
 
-        public Result<string> Register(string userName)
+        public async Task<Result<string>> Register(string userName)
         {
             if (string.IsNullOrWhiteSpace(userName))
                 return ErroWithMessage<string>("user name is empty!");
@@ -79,7 +80,7 @@ namespace UserGoldService.Domain
             mutex.WaitOne();
             try
             {
-                var user = _repository.GetByName(userName);
+                var user = await _repository.GetByName(userName);
                 if (user == null)
                 {
                     user = new User
@@ -88,7 +89,7 @@ namespace UserGoldService.Domain
                         Name = userName,
                         Gold = 0
                     };
-                    _repository.Create(user);
+                   await _repository.Create(user);
                 }
                 return Valid<string>(user.id.ToString());
             }

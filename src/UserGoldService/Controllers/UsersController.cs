@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 using UserGoldService.Domain;
 using UserGoldService.Entities;
 
@@ -17,24 +18,24 @@ namespace UserGoldService.Controllers
         }
 
         [HttpGet("[action]")]
-        public IActionResult MyGold([FromHeader] string token)
+        public async Task<IActionResult> MyGold([FromHeader] string token)
         {
-            Result<decimal> result = _service.GetMyGold(token);
+            Result<decimal> result = await _service.GetMyGold(token);
             return GetValue(result, r => Content(r.ToString()));
 
         }
 
         [HttpPut("gold/{count}")]
-        public IActionResult AddGold(decimal count, [FromHeader] string token)
+        public async Task<IActionResult> AddGold(decimal count, [FromHeader] string token)
         {
-            Result<bool> result = _service.AddGold(count, token);
+            Result<bool> result = await _service.AddGold(count, token);
             return GetValue(result, r => Ok());
         }
 
         [HttpPut("register/{userName}")]
-        public IActionResult Register(string userName)
+        public async Task<IActionResult> Register(string userName)
         {
-            Result<string> result = _service.Register(userName);
+            Result<string> result = await _service.Register(userName);
             return GetValue(result, r => Content(r));
         }
 

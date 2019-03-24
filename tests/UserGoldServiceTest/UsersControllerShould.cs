@@ -33,34 +33,39 @@ namespace UserGoldServiceTest
             _root = "api/v1/users/";
         }
 
-        [Fact]
-        public async Task RegisterShouldReturnValidToken()
+        private async Task<string> Register(string userName)
         {
-            string userName = "Victor";
             HttpResponseMessage response = await _client.PutAsync(_root + $"register/{userName}", null);
             response.EnsureSuccessStatusCode();
-            string result = await response.Content.ReadAsStringAsync();
-            Assert.Equal(userName, result);
+            return await response.Content.ReadAsStringAsync();
         }
 
-        [Fact]
-        public async Task GetMyGoldShouldReturnValidGold()
+
+        private async Task<decimal> GetMyGold(string token)
         {
-            _client.DefaultRequestHeaders.Add("token", new[] { "1111" });
+            _client.DefaultRequestHeaders.Add("token", new[] { token });
             HttpResponseMessage response = await _client.GetAsync(_root + "mygold/");
             response.EnsureSuccessStatusCode();
             string str = await response.Content.ReadAsStringAsync();
-            decimal result = decimal.Parse(str, CultureInfo.InvariantCulture);
-            Assert.Equal(1, result);
+            return decimal.Parse(str, CultureInfo.InvariantCulture);
+        }
+
+        private async Task AddGold(decimal count, string token)
+        {
+            StringContent content = new StringContent("");
+            content.Headers.Add("token", new[] { token });
+            HttpResponseMessage response = await _client.PutAsync(_root + $"gold/{count}", content);
+            response.EnsureSuccessStatusCode();
         }
 
         [Fact]
-        public async Task AddGoldShouldAddValidGold()
+        public async Task WorkCorrect()
         {
-            var content = new StringContent("");
-            content.Headers.Add("token", new[] { "1111" });
-            HttpResponseMessage response = await _client.PutAsync(_root + "gold/111", content);
-            response.EnsureSuccessStatusCode();
+            var token = await Register("Victor");
+            var oldGold = await GetMyGold(token);
+            await AddGold(1, token);
+            var newGold = await GetMyGold(token);
+            Assert.Equal(oldGold, newGold + 1);
         }
     }
 }
