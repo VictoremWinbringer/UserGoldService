@@ -110,7 +110,7 @@ namespace UserGoldService.Domain
 
         private Result<T> ErroWithMessage<T>(string message)
         {
-            return new Result<T>(default(T), ErrorKind.NotValidToken, message);
+            return new Result<T>(default(T), ErrorKind.Message, message);
         }
 
         private Result<T> Valid<T>(T value)
